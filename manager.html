@@ -326,7 +326,14 @@
                 min-width: 160px;
             }
             .name-cell .member-name {
-                display: inline;
+                display: block;
+            }
+            .name-cell .member-date {
+                display: block;
+                font-size: 0.7rem;
+                font-weight: 400;
+                color: var(--xps-text-muted);
+                margin-top: 1px;
             }
             .name-cell .remove-btn {
                 position: absolute;
@@ -707,9 +714,12 @@
             function loadState() {
                 try {
                     const saved = localStorage.getItem(STORAGE_KEY);
-                    if (saved) return JSON.parse(saved);
+                    if (saved) {
+                        const s = JSON.parse(saved);
+                        return { members: [], ratings: {}, dates: {}, ...s };
+                    }
                 } catch (e) {}
-                return { members: [], ratings: {} };
+                return { members: [], ratings: {}, dates: {} };
             }
 
             function saveState() {
@@ -872,8 +882,10 @@
                 // Member rows
                 for (const member of state.members) {
                     html += "<tr>";
+                    const memberDate = state.dates && state.dates[member];
                     html += `<td class="name-cell">
                         <span class="member-name">${escHtml(member)}</span>
+                        ${memberDate ? `<span class="member-date">${escHtml(memberDate)}</span>` : ""}
                         <button class="remove-btn" onclick="removeMember('${escJs(member)}')" title="Remove member">&times;</button>
                     </td>`;
                     for (const skill of allSkills) {
@@ -949,7 +961,11 @@
                         try {
                             const data = JSON.parse(e.target.result);
                             const name = (data.name || "").trim();
-                            if (!name) return;
+                            if (!name) {
+                                loaded++;
+                                if (loaded === files.length) finishImport();
+                                return;
+                            }
 
                             // Check profile matches
                             const fileProfile = data.profile || "coder";
@@ -964,6 +980,8 @@
 
                             if (!state.members.includes(name))
                                 state.members.push(name);
+
+                            if (data.date) state.dates[name] = data.date;
 
                             if (data.ratings) {
                                 for (const [skillId, val] of Object.entries(
