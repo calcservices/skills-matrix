@@ -544,6 +544,35 @@
                 font-size: 0.8rem;
                 margin-top: 8px;
             }
+            /* ─── HISTORY EXPAND ─── */
+            .expand-btn {
+                font-size: 0.7rem;
+                color: var(--xps-text-muted);
+                background: none;
+                border: 1px solid var(--xps-border);
+                border-radius: 3px;
+                padding: 1px 5px;
+                cursor: pointer;
+                margin-top: 3px;
+                display: block;
+                transition: all 0.15s;
+            }
+            .expand-btn:hover {
+                color: var(--xps-blue);
+                border-color: var(--xps-blue);
+            }
+            .history-row .name-cell {
+                background: var(--xps-charcoal-dark) !important;
+                padding-left: 24px !important;
+            }
+            .history-date {
+                font-size: 0.75rem;
+                color: var(--xps-text-muted);
+                font-weight: 400;
+            }
+            .history-row .level-cell {
+                opacity: 0.8;
+            }
         </style>
         <script src="skills-config.js"></script>
     </head>
@@ -692,6 +721,7 @@
                 const profiles = [
                     { key: "coder", label: "Coders" },
                     { key: "analyst", label: "Analysts" },
+                    { key: "servicemanager", label: "Service Managers" },
                 ];
                 const toggle = document.getElementById("profileToggle");
                 for (const p of profiles) {
@@ -716,11 +746,14 @@
                     const saved = localStorage.getItem(STORAGE_KEY);
                     if (saved) {
                         const s = JSON.parse(saved);
-                        return { members: [], ratings: {}, dates: {}, ...s };
+                        return { members: [], ratings: {}, dates: {}, memberHistory: {}, ...s };
                     }
                 } catch (e) {}
-                return { members: [], ratings: {}, dates: {} };
+                return { members: [], ratings: {}, dates: {}, memberHistory: {} };
             }
+
+            // Tracks which member rows are expanded — not persisted (always starts collapsed)
+            const expanded = new Set();
 
             function saveState() {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -770,6 +803,8 @@
                 Object.keys(state.ratings).forEach((k) => {
                     if (k.startsWith(name + "|")) delete state.ratings[k];
                 });
+                if (state.memberHistory) delete state.memberHistory[name];
+                expanded.delete(name);
                 saveState();
                 render();
             }
@@ -785,6 +820,23 @@
 
             function getRating(member, skillId) {
                 return state.ratings[member + "|" + skillId] || 0;
+            }
+
+            // ─── HISTORY EXPAND ───
+            function toggleExpand(member) {
+                if (expanded.has(member)) expanded.delete(member);
+                else expanded.add(member);
+                render();
+            }
+
+            function formatSnapshotDate(ts) {
+                if (!ts) return "—";
+                const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+                const m = ts.match(/^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2}))?/);
+                if (!m) return ts;
+                const [, year, mon, day, hh, mm] = m;
+                const name = months[parseInt(mon, 10) - 1];
+                return hh ? `${parseInt(day, 10)} ${name} ${year} ${hh}:${mm}` : `${parseInt(day, 10)} ${name} ${year}`;
             }
 
             // ─── DETAIL PANEL ───
@@ -881,11 +933,16 @@
 
                 // Member rows
                 for (const member of state.members) {
+                    const memberHistory = state.memberHistory && state.memberHistory[member];
+                    const hasHistory = memberHistory && memberHistory.length > 1;
+                    const isExpanded = expanded.has(member);
+
                     html += "<tr>";
                     const memberDate = state.dates && state.dates[member];
                     html += `<td class="name-cell">
                         <span class="member-name">${escHtml(member)}</span>
                         ${memberDate ? `<span class="member-date">${escHtml(memberDate)}</span>` : ""}
+                        ${hasHistory ? `<button class="expand-btn" onclick="toggleExpand('${escJs(member)}')">${isExpanded ? "▼" : "▶"} ${memberHistory.length} exports</button>` : ""}
                         <button class="remove-btn" onclick="removeMember('${escJs(member)}')" title="Remove member">&times;</button>
                     </td>`;
                     for (const skill of allSkills) {
@@ -895,6 +952,24 @@
                         </td>`;
                     }
                     html += "</tr>";
+
+                    // History rows when expanded
+                    if (isExpanded && memberHistory) {
+                        for (const snap of memberHistory) {
+                            html += `<tr class="history-row">
+                                <td class="name-cell history-name">
+                                    <span class="history-date">${escHtml(formatSnapshotDate(snap.timestamp || snap.date))}</span>
+                                </td>`;
+                            for (const skill of allSkills) {
+                                const val = snap.ratings ? snap.ratings[skill.id] : null;
+                                const level = val ? (typeof val === "object" ? val.level : val) : 0;
+                                html += `<td class="level-cell" data-level="${level}">
+                                    <span class="level-badge">${LEVEL_LABELS[level]}</span>
+                                </td>`;
+                            }
+                            html += "</tr>";
+                        }
+                    }
                 }
 
                 // Average row
@@ -996,6 +1071,13 @@
                                             level;
                                     }
                                 }
+                            }
+                            // Capture history for expand feature
+                            if (!state.memberHistory) state.memberHistory = {};
+                            if (data.history && data.history.length) {
+                                state.memberHistory[name] = data.history;
+                            } else if (data.ratings) {
+                                state.memberHistory[name] = [{ date: data.date || "", timestamp: data.timestamp || "", ratings: data.ratings }];
                             }
                             imported++;
                         } catch (err) {
@@ -1147,7 +1229,8 @@
                     )
                 )
                     return;
-                state = { members: [], ratings: {} };
+                state = { members: [], ratings: {}, dates: {}, memberHistory: {} };
+                expanded.clear();
                 saveState();
                 render();
             }

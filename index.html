@@ -832,6 +832,114 @@
                     display: none !important;
                 }
             }
+            /* ─── TAB BAR ─── */
+            .tab-bar {
+                display: flex;
+                gap: 4px;
+                padding: 12px 24px 0;
+                background: var(--xps-dark-bg);
+            }
+            .tab-btn {
+                padding: 8px 20px;
+                border-radius: 6px 6px 0 0;
+                border: none;
+                cursor: pointer;
+                background: var(--xps-charcoal);
+                color: var(--xps-text-muted);
+                font-size: 0.85rem;
+                transition: all 0.2s;
+            }
+            .tab-btn.active {
+                background: var(--xps-card-bg);
+                color: var(--xps-text);
+            }
+            /* ─── HISTORY VIEW ─── */
+            .history-container {
+                max-width: 900px;
+                margin: 0 auto;
+                padding: 28px 24px;
+            }
+            .history-empty {
+                padding: 48px 24px;
+                text-align: center;
+                color: var(--xps-text-muted);
+                background: var(--xps-card-bg);
+                border: 1px solid var(--xps-border);
+                border-radius: 10px;
+            }
+            .history-table-wrap {
+                overflow-x: auto;
+                border-radius: 10px;
+                border: 1px solid var(--xps-border);
+                background: var(--xps-card-bg);
+            }
+            .history-table {
+                border-collapse: collapse;
+                width: max-content;
+                min-width: 100%;
+            }
+            .history-table th,
+            .history-table td {
+                border: 1px solid var(--xps-border);
+                text-align: center;
+                white-space: nowrap;
+            }
+            .history-table .cat-header th {
+                background: var(--xps-charcoal-dark);
+                color: var(--xps-blue);
+                font-size: 0.7rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                padding: 8px 6px;
+            }
+            .history-table .skill-header th {
+                background: var(--xps-charcoal);
+                color: var(--xps-text);
+                font-size: 0.75rem;
+                font-weight: 600;
+                padding: 10px 8px;
+                min-width: 100px;
+            }
+            .history-table .skill-header th:first-child {
+                min-width: 160px;
+                text-align: left;
+                padding-left: 16px;
+            }
+            .history-date-cell {
+                text-align: left !important;
+                padding: 6px 12px !important;
+                font-size: 0.82rem;
+                font-weight: 600;
+                background: var(--xps-card-bg);
+                min-width: 160px;
+            }
+            .history-table .level-cell {
+                padding: 6px 4px !important;
+                min-width: 100px;
+            }
+            .history-table .level-cell .level-badge {
+                display: inline-block;
+                padding: 3px 10px;
+                border-radius: 4px;
+                font-size: 0.75rem;
+                font-weight: 600;
+                min-width: 90px;
+            }
+            .history-table .level-cell[data-level="0"] { background: transparent; }
+            .history-table .level-cell[data-level="0"] .level-badge {
+                background: rgba(255,255,255,0.03);
+                color: var(--xps-text-muted);
+                border: 1px dashed var(--xps-border);
+            }
+            .history-table .level-cell[data-level="1"] { background: rgba(92,107,192,0.1); }
+            .history-table .level-cell[data-level="1"] .level-badge { background: var(--level-1); color: #fff; }
+            .history-table .level-cell[data-level="2"] { background: rgba(38,166,154,0.1); }
+            .history-table .level-cell[data-level="2"] .level-badge { background: var(--level-2); color: #fff; }
+            .history-table .level-cell[data-level="3"] { background: rgba(255,152,0,0.1); }
+            .history-table .level-cell[data-level="3"] .level-badge { background: var(--level-3); color: #fff; }
+            .history-table .level-cell[data-level="4"] { background: rgba(239,83,80,0.1); }
+            .history-table .level-cell[data-level="4"] .level-badge { background: var(--level-4); color: #fff; }
         </style>
         <script src="skills-config.js"></script>
     </head>
@@ -900,8 +1008,14 @@
             </div>
         </div>
 
+        <!-- TAB BAR -->
+        <div class="tab-bar">
+            <button class="tab-btn active" data-tab="assessment" onclick="switchTab('assessment')">My Assessment</button>
+            <button class="tab-btn" data-tab="history" onclick="switchTab('history')">My History</button>
+        </div>
+
         <!-- MAIN -->
-        <div class="app-container">
+        <div class="app-container" id="assessmentView">
             <div class="name-section">
                 <label for="nameInput">Your name</label>
                 <input
@@ -931,6 +1045,11 @@
             </div>
 
             <div id="skillCards"></div>
+        </div>
+
+        <!-- HISTORY VIEW -->
+        <div id="historyView" style="display:none">
+            <div class="history-container" id="historyContent"></div>
         </div>
 
         <!-- LANDING PAGE -->
@@ -1036,6 +1155,7 @@
             // ─── STATE ───
             let ratings = {};
             let userName = "";
+            let history = [];
             let completionShown = false;
 
             (function loadSaved() {
@@ -1045,6 +1165,7 @@
                         const data = JSON.parse(saved);
                         userName = data.name || "";
                         ratings = data.ratings || {};
+                        history = data.history || [];
                     }
                 } catch (e) {}
             })();
@@ -1052,7 +1173,7 @@
             function saveLocal() {
                 localStorage.setItem(
                     STORAGE_KEY,
-                    JSON.stringify({ name: userName, ratings }),
+                    JSON.stringify({ name: userName, ratings, history }),
                 );
             }
 
@@ -1441,6 +1562,7 @@
                     return;
                 userName = "";
                 ratings = {};
+                history = [];
                 saveLocal();
                 render();
             }
@@ -1477,6 +1599,17 @@
                                 }
                             }
                         }
+                        // Merge history (deduplicate by timestamp)
+                        if (data.history && data.history.length) {
+                            const existing = new Set(history.map((h) => h.timestamp));
+                            for (const entry of data.history) {
+                                if (entry.timestamp && !existing.has(entry.timestamp)) {
+                                    history.push(entry);
+                                    existing.add(entry.timestamp);
+                                }
+                            }
+                            history.sort((a, b) => (b.timestamp || b.date || "").localeCompare(a.timestamp || a.date || ""));
+                        }
                         saveLocal();
                         render();
                     } catch (err) {
@@ -1496,32 +1629,42 @@
                     return;
                 }
 
-                const data = {
-                    name: userName,
-                    profile: PROFILE,
-                    date: new Date().toISOString().split("T")[0],
-                    ratings: {},
-                };
+                const now = new Date();
+                const pad = (n) => String(n).padStart(2, "0");
+                const dateStr = now.toISOString().split("T")[0];
+                const timestamp = `${dateStr}T${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+                const timePart = pad(now.getHours()) + pad(now.getMinutes()) + pad(now.getSeconds());
 
+                // Build snapshot ratings
+                const snapRatings = {};
                 for (const skill of allSkills) {
                     const level = ratings[skill.id] || 0;
                     if (level > 0) {
-                        data.ratings[skill.id] = {
-                            level: level,
-                            label: LEVEL_LABELS[level],
-                        };
+                        snapRatings[skill.id] = { level, label: LEVEL_LABELS[level] };
                     }
                 }
+
+                // Prepend snapshot to history
+                const snapshot = { date: dateStr, timestamp, ratings: snapRatings };
+                history.unshift(snapshot);
+                saveLocal();
+
+                const data = {
+                    name: userName,
+                    profile: PROFILE,
+                    date: dateStr,
+                    timestamp,
+                    ratings: snapRatings,
+                    history,
+                };
 
                 const blob = new Blob([JSON.stringify(data, null, 2)], {
                     type: "application/json",
                 });
                 const a = document.createElement("a");
                 a.href = URL.createObjectURL(blob);
-                const safeName = userName
-                    .toLowerCase()
-                    .replace(/[^a-z0-9]+/g, "-");
-                a.download = `skills-${safeName}.json`;
+                const safeName = userName.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+                a.download = `skills-${safeName}-${dateStr}-${timePart}.json`;
                 a.click();
             }
 
@@ -1638,6 +1781,67 @@
                 document.getElementById("landingOverlay").classList.remove("open");
                 localStorage.setItem("mySkills_landingSeen_" + PROFILE, "1");
                 document.getElementById("nameInput").focus();
+            }
+
+            // ─── TAB SWITCHING ───
+            function switchTab(tab) {
+                document.getElementById("assessmentView").style.display = tab === "assessment" ? "" : "none";
+                document.getElementById("historyView").style.display = tab === "history" ? "" : "none";
+                document.querySelectorAll(".tab-btn").forEach((b) => {
+                    b.classList.toggle("active", b.dataset.tab === tab);
+                });
+                if (tab === "history") renderHistory();
+            }
+
+            // ─── HISTORY VIEW ───
+            function formatHistoryDate(ts) {
+                if (!ts) return "—";
+                const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+                const m = ts.match(/^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2}))?/);
+                if (!m) return ts;
+                const [, year, mon, day, hh, mm] = m;
+                const name = months[parseInt(mon, 10) - 1];
+                return hh ? `${parseInt(day, 10)} ${name} ${year} ${hh}:${mm}` : `${parseInt(day, 10)} ${name} ${year}`;
+            }
+
+            function renderHistory() {
+                const el = document.getElementById("historyContent");
+                if (history.length === 0) {
+                    el.innerHTML = '<div class="history-empty"><p>No exports yet. Rate your skills and click <strong>Save &amp; Export</strong> to create your first snapshot.</p></div>';
+                    return;
+                }
+
+                const allSkillsList = SKILLS.flatMap((c) => c.skills);
+                let html = '<div class="history-table-wrap"><table class="history-table">';
+
+                // Category header row
+                html += '<tr class="cat-header"><th>Date</th>';
+                for (const cat of SKILLS) {
+                    html += `<th colspan="${cat.skills.length}">${cat.category}</th>`;
+                }
+                html += "</tr>";
+
+                // Skill header row
+                html += '<tr class="skill-header"><th></th>';
+                for (const skill of allSkillsList) {
+                    html += `<th>${skill.name}</th>`;
+                }
+                html += "</tr>";
+
+                // Snapshot rows (newest first)
+                for (const snap of history) {
+                    html += "<tr>";
+                    html += `<td class="history-date-cell">${formatHistoryDate(snap.timestamp || snap.date)}</td>`;
+                    for (const skill of allSkillsList) {
+                        const val = snap.ratings ? snap.ratings[skill.id] : null;
+                        const level = val ? (typeof val === "object" ? val.level : val) : 0;
+                        html += `<td class="level-cell" data-level="${level}"><span class="level-badge">${LEVEL_LABELS[level]}</span></td>`;
+                    }
+                    html += "</tr>";
+                }
+
+                html += "</table></div>";
+                el.innerHTML = html;
             }
 
             // ─── INIT ───
