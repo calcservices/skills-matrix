@@ -20,8 +20,8 @@ Work through each category and click the level that best describes you. There ar
 
 | Level | Label | Meaning |
 |-------|-------|---------|
-| 1 | Awareness | You know the concept and have some exposure |
-| 2 | Practitioner | You use this skill regularly with confidence |
+| 1 | Foundation | You know the concept and have some exposure |
+| 2 | Proficient | You use this skill regularly with confidence |
 | 3 | Advanced | You apply it in complex situations and can guide others |
 | 4 | Expert | You are a go-to authority and drive best practice |
 

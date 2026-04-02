@@ -20,10 +20,20 @@
                 --level-3: #ff9800;
                 --level-4: #ef5350;
             }
-            * { box-sizing: border-box; margin: 0; padding: 0; }
-            html { scrollbar-gutter: stable; }
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+            html {
+                scrollbar-gutter: stable;
+            }
             body {
-                font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+                font-family:
+                    "Segoe UI",
+                    -apple-system,
+                    BlinkMacSystemFont,
+                    sans-serif;
                 background: var(--bg);
                 color: var(--text);
                 line-height: 1.6;
@@ -34,10 +44,23 @@
                 border-bottom: 3px solid var(--blue);
                 padding: 16px 32px;
             }
-            .header h1 { font-size: 1.2rem; font-weight: 400; }
-            .header h1 strong { font-weight: 700; }
-            .header p { font-size: 0.9rem; color: var(--muted); margin-top: 2px; }
-            .container { max-width: 740px; margin: 0 auto; padding: 40px 24px 60px; }
+            .header h1 {
+                font-size: 1.2rem;
+                font-weight: 400;
+            }
+            .header h1 strong {
+                font-weight: 700;
+            }
+            .header p {
+                font-size: 0.9rem;
+                color: var(--muted);
+                margin-top: 2px;
+            }
+            .container {
+                max-width: 740px;
+                margin: 0 auto;
+                padding: 40px 24px 60px;
+            }
             .intro {
                 background: var(--card);
                 border: 1px solid var(--border);
@@ -48,7 +71,9 @@
                 color: var(--muted);
                 font-size: 0.95rem;
             }
-            .intro strong { color: var(--text); }
+            .intro strong {
+                color: var(--text);
+            }
             h2 {
                 font-size: 0.75rem;
                 font-weight: 700;
@@ -57,7 +82,10 @@
                 color: var(--blue);
                 margin-bottom: 16px;
             }
-            .steps { list-style: none; margin-bottom: 40px; }
+            .steps {
+                list-style: none;
+                margin-bottom: 40px;
+            }
             .steps li {
                 display: flex;
                 gap: 20px;
@@ -81,10 +109,21 @@
                 align-items: center;
                 justify-content: center;
             }
-            .step-body { flex: 1; }
-            .step-body strong { display: block; font-size: 1rem; margin-bottom: 4px; }
-            .step-body p { font-size: 0.9rem; color: var(--muted); }
-            .step-body p + p { margin-top: 6px; }
+            .step-body {
+                flex: 1;
+            }
+            .step-body strong {
+                display: block;
+                font-size: 1rem;
+                margin-bottom: 4px;
+            }
+            .step-body p {
+                font-size: 0.9rem;
+                color: var(--muted);
+            }
+            .step-body p + p {
+                margin-top: 6px;
+            }
             .tip {
                 background: var(--charcoal-dark);
                 border: 1px solid var(--border);
@@ -95,7 +134,9 @@
                 font-size: 0.9rem;
                 color: var(--muted);
             }
-            .tip strong { color: var(--green); }
+            .tip strong {
+                color: var(--green);
+            }
             .levels {
                 display: flex;
                 gap: 10px;
@@ -119,7 +160,10 @@
 
         <div class="container">
             <div class="intro">
-                <strong>What is this?</strong> A quick self-assessment that captures your current skill levels. It takes around 10 minutes, your progress saves automatically, and you only need to do it once — though you can update it at any time.
+                <strong>What is this?</strong> A quick self-assessment that
+                captures your current skill levels. It takes around 10 minutes,
+                your progress saves automatically, and you only need to do it
+                once — though you can update it at any time.
             </div>
 
             <h2>Steps</h2>
@@ -128,49 +172,94 @@
                     <span class="step-num">1</span>
                     <div class="step-body">
                         <strong>Open the file</strong>
-                        <p>Open <code>index.html</code> in your browser. No internet connection or installation needed.</p>
+                        <p>
+                            Open <code>index.html</code> in your browser. No
+                            internet connection or installation needed.
+                        </p>
                     </div>
                 </li>
                 <li>
                     <span class="step-num">2</span>
                     <div class="step-body">
                         <strong>Select your profile</strong>
-                        <p>Use the toggle in the top-right corner to select your role: <em>Coders</em>, <em>Analysts</em>, or <em>Service Managers</em>. This loads the skill set relevant to you.</p>
+                        <p>
+                            Use the toggle in the top-right corner to select
+                            your role: <em>Coders</em>, <em>Analysts</em>, or
+                            <em>Service Managers</em>. This loads the skill set
+                            relevant to you.
+                        </p>
                     </div>
                 </li>
                 <li>
                     <span class="step-num">3</span>
                     <div class="step-body">
                         <strong>Enter your name</strong>
-                        <p>Type your full name in the box at the top. This is used to identify your export file.</p>
+                        <p>
+                            Type your full name in the box at the top. This is
+                            used to identify your export file.
+                        </p>
                     </div>
                 </li>
                 <li>
                     <span class="step-num">4</span>
                     <div class="step-body">
                         <strong>Rate yourself for each skill</strong>
-                        <p>Work through each category and click the level that best describes you. There are four levels:</p>
+                        <p>
+                            Work through each category and click the level that
+                            best describes you. There are four levels:
+                        </p>
                         <div class="levels">
-                            <span class="level-badge" style="background: var(--level-1)">1 — Awareness</span>
-                            <span class="level-badge" style="background: var(--level-2)">2 — Practitioner</span>
-                            <span class="level-badge" style="background: var(--level-3)">3 — Advanced</span>
-                            <span class="level-badge" style="background: var(--level-4)">4 — Expert</span>
+                            <span
+                                class="level-badge"
+                                style="background: var(--level-1)"
+                                >1 — Foundation</span
+                            >
+                            <span
+                                class="level-badge"
+                                style="background: var(--level-2)"
+                                >2 — Proficient</span
+                            >
+                            <span
+                                class="level-badge"
+                                style="background: var(--level-3)"
+                                >3 — Advanced</span
+                            >
+                            <span
+                                class="level-badge"
+                                style="background: var(--level-4)"
+                                >4 — Expert</span
+                            >
                         </div>
-                        <p style="margin-top:10px">Click <strong>"What does this mean?"</strong> next to any skill to see a full description of what each level looks like in practice.</p>
+                        <p style="margin-top: 10px">
+                            Click <strong>"What does this mean?"</strong> next
+                            to any skill to see a full description of what each
+                            level looks like in practice.
+                        </p>
                     </div>
                 </li>
                 <li>
                     <span class="step-num">5</span>
                     <div class="step-body">
                         <strong>Check your progress</strong>
-                        <p>The progress bar near the top shows how many skills you've rated. Completed categories collapse automatically to keep things tidy. The radar chart gives you a visual overview of your profile.</p>
+                        <p>
+                            The progress bar near the top shows how many skills
+                            you've rated. Completed categories collapse
+                            automatically to keep things tidy. The radar chart
+                            gives you a visual overview of your profile.
+                        </p>
                     </div>
                 </li>
                 <li>
                     <span class="step-num">6</span>
                     <div class="step-body">
                         <strong>Save &amp; Export when done</strong>
-                        <p>Click <strong>Save &amp; Export</strong> in the top-right corner. This downloads a JSON file named with your name and today's date — for example: <code>skills-jane-smith-2026-03-24-143215.json</code>.</p>
+                        <p>
+                            Click <strong>Save &amp; Export</strong> in the
+                            top-right corner. This downloads a JSON file named
+                            with your name and today's date — for example:
+                            <code>skills-jane-smith-2026-03-24-143215.json</code
+                            >.
+                        </p>
                         <p>Send this file to your line manager.</p>
                     </div>
                 </li>
@@ -178,14 +267,26 @@
                     <span class="step-num">7</span>
                     <div class="step-body">
                         <strong>Coming back later</strong>
-                        <p>Your ratings are saved automatically in your browser. Open the file again at any time to update your assessment. Each time you export, a new snapshot is added to your history.</p>
-                        <p>Click the <strong>My History</strong> tab to see all your past exports side by side.</p>
+                        <p>
+                            Your ratings are saved automatically in your
+                            browser. Open the file again at any time to update
+                            your assessment. Each time you export, a new
+                            snapshot is added to your history.
+                        </p>
+                        <p>
+                            Click the <strong>My History</strong> tab to see all
+                            your past exports side by side.
+                        </p>
                     </div>
                 </li>
             </ol>
 
             <div class="tip">
-                <strong>Tip:</strong> Be honest — there are no wrong answers. The goal is to give your manager a clear picture of where you are now, so they can support your development. If you're unsure between two levels, pick the lower one and add a note when you send the file.
+                <strong>Tip:</strong> Be honest — there are no wrong answers.
+                The goal is to give your manager a clear picture of where you
+                are now, so they can support your development. If you're unsure
+                between two levels, pick the lower one and add a note when you
+                send the file.
             </div>
         </div>
     </body>

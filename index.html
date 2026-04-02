@@ -810,6 +810,40 @@
             .landing-start:hover {
                 background: var(--xps-blue-dark);
             }
+            .landing-role-label {
+                font-size: 0.85rem;
+                font-weight: 600;
+                color: var(--xps-text-muted);
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                margin-bottom: 10px;
+            }
+            .landing-role-picker {
+                display: flex;
+                gap: 10px;
+                margin-bottom: 28px;
+            }
+            .landing-role-btn {
+                flex: 1;
+                padding: 12px 8px;
+                background: var(--xps-charcoal);
+                border: 2px solid var(--xps-border);
+                border-radius: 8px;
+                color: var(--xps-text);
+                font-size: 0.9rem;
+                font-weight: 500;
+                cursor: pointer;
+                transition: border-color 0.15s, background 0.15s;
+                font-family: inherit;
+            }
+            .landing-role-btn:hover {
+                border-color: var(--xps-blue);
+            }
+            .landing-role-btn.active {
+                border-color: var(--xps-blue);
+                background: rgba(74, 159, 217, 0.15);
+                color: var(--xps-blue-light);
+            }
 
             /* ─── RESPONSIVE ─── */
             @media (max-width: 600px) {
@@ -1067,6 +1101,12 @@
                 <p class="landing-intro">
                     This is a quick self-assessment to capture your current skill levels across the team.
                 </p>
+                <p class="landing-role-label">Which matrix describes your role?</p>
+                <div class="landing-role-picker">
+                    <button class="landing-role-btn" data-profile="coder" onclick="selectLandingRole(this)">Coder</button>
+                    <button class="landing-role-btn" data-profile="analyst" onclick="selectLandingRole(this)">Analyst</button>
+                    <button class="landing-role-btn" data-profile="servicemanager" onclick="selectLandingRole(this)">Service Manager</button>
+                </div>
                 <ol class="landing-steps">
                     <li>
                         <span class="landing-step-num">1</span>
@@ -1773,13 +1813,29 @@
                 const dismissed = localStorage.getItem("mySkills_landingSeen_" + PROFILE);
                 const hasData = userName || Object.keys(ratings).length > 0;
                 if (!dismissed && !hasData) {
+                    // Pre-select the current profile's role button
+                    document.querySelectorAll(".landing-role-btn").forEach((btn) => {
+                        btn.classList.toggle("active", btn.dataset.profile === PROFILE);
+                    });
                     document.getElementById("landingOverlay").classList.add("open");
                 }
             }
 
+            function selectLandingRole(btn) {
+                document.querySelectorAll(".landing-role-btn").forEach((b) => b.classList.remove("active"));
+                btn.classList.add("active");
+            }
+
             function dismissLanding() {
+                const selected = document.querySelector(".landing-role-btn.active")?.dataset.profile || PROFILE;
                 document.getElementById("landingOverlay").classList.remove("open");
-                localStorage.setItem("mySkills_landingSeen_" + PROFILE, "1");
+                localStorage.setItem("mySkills_landingSeen_" + selected, "1");
+                if (selected !== PROFILE) {
+                    const url = new URL(window.location);
+                    url.searchParams.set("profile", selected);
+                    window.location.href = url.toString();
+                    return;
+                }
                 document.getElementById("nameInput").focus();
             }
 
