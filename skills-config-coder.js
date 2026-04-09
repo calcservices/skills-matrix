@@ -28,7 +28,7 @@ const UI_TEXT = {
 // Add or remove levels as needed — the app will adapt automatically.
 // Each level needs a label and a colour (CSS value or custom property).
 const LEVELS = [
-    { label: "—",          color: "transparent" },
+    { label: "—",          color: "#6b7280" },
     { label: "Foundation", color: "var(--level-1)" },
     { label: "Proficient", color: "var(--level-2)" },
     { label: "Advanced",   color: "var(--level-3)" },

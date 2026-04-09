@@ -498,6 +498,19 @@
                 border-top-color: transparent;
                 border-bottom-color: var(--xps-charcoal-dark);
             }
+            .na-option {
+                flex: 0 0 auto;
+                min-width: 52px;
+                opacity: 0.55;
+                font-size: 0.78rem;
+            }
+            .na-option:hover {
+                opacity: 1;
+            }
+            .na-option.selected {
+                opacity: 1;
+                color: #fff;
+            }
 
             /* ─── DETAIL PANEL ─── */
             .detail-overlay {
@@ -1248,18 +1261,14 @@
             }
 
             function updateExportBtn() {
-                const filled = Object.values(ratings).filter(
-                    (r) => r > 0,
-                ).length;
+                const filled = Object.keys(ratings).length;
                 document.getElementById("exportBtn").disabled =
                     !userName || filled === 0;
             }
 
             // ─── PROGRESS ───
             function updateProgress() {
-                const filled = Object.values(ratings).filter(
-                    (r) => r > 0,
-                ).length;
+                const filled = Object.keys(ratings).length;
                 const pct = Math.round((filled / totalSkills) * 100);
                 const fill = document.getElementById("progressFill");
                 fill.style.width = pct + "%";
@@ -1271,7 +1280,7 @@
                 // Update category counts and completion state
                 for (const cat of SKILLS) {
                     const catFilled = cat.skills.filter(
-                        (s) => (ratings[s.id] || 0) > 0,
+                        (s) => s.id in ratings,
                     ).length;
                     const isComplete = catFilled === cat.skills.length;
                     const countEl = document.getElementById(
@@ -1489,14 +1498,14 @@
                 if (row)
                     row.classList.toggle(
                         "rated",
-                        (ratings[skillId] || 0) > 0,
+                        skillId in ratings,
                     );
             }
 
             function renderSkillButtons(skillId) {
                 const container = document.getElementById("btns-" + skillId);
                 if (!container) return;
-                const current = ratings[skillId] || 0;
+                const current = skillId in ratings ? ratings[skillId] : -1;
                 const buttons = container.querySelectorAll(".level-option");
                 buttons.forEach((btn) => {
                     const lvl = parseInt(btn.dataset.level);
@@ -1528,13 +1537,15 @@
                 if (!skill) return;
 
                 const h = UI_TEXT.detailHeadings;
-                const currentLevel = ratings[skillId] || 0;
+                const currentLevel = skillId in ratings ? ratings[skillId] : -1;
                 const panel = document.getElementById("detailPanel");
 
                 const yourLevelHtml =
-                    currentLevel > 0
-                        ? `<span class="detail-your-level" style="background:${LEVEL_COLORS[currentLevel]}">Your rating: ${LEVEL_LABELS[currentLevel]}</span>`
-                        : `<span class="detail-your-level unrated">Not yet rated</span>`;
+                    currentLevel === -1
+                        ? `<span class="detail-your-level unrated">Not yet rated</span>`
+                        : currentLevel === 0
+                        ? `<span class="detail-your-level" style="background:${LEVEL_COLORS[0]}">Your rating: N/A</span>`
+                        : `<span class="detail-your-level" style="background:${LEVEL_COLORS[currentLevel]}">Your rating: ${LEVEL_LABELS[currentLevel]}</span>`;
 
                 panel.innerHTML = `
                     <button class="detail-close" onclick="closeDetail()">&times;</button>
@@ -1634,7 +1645,7 @@
                             )) {
                                 const level =
                                     typeof val === "object" ? val.level : val;
-                                if (level >= 1 && level <= NUM_LEVELS) {
+                                if (level >= 0 && level <= NUM_LEVELS) {
                                     ratings[skillId] = level;
                                 }
                             }
@@ -1678,10 +1689,10 @@
                 // Build snapshot ratings
                 const snapRatings = {};
                 for (const skill of allSkills) {
-                    const level = ratings[skill.id] || 0;
-                    if (level > 0) {
-                        snapRatings[skill.id] = { level, label: LEVEL_LABELS[level] };
-                    }
+                    if (!(skill.id in ratings)) continue;
+                    const level = ratings[skill.id];
+                    const label = level === 0 ? "N/A" : LEVEL_LABELS[level];
+                    snapRatings[skill.id] = { level, label };
                 }
 
                 // Prepend snapshot to history
@@ -1718,7 +1729,7 @@
                 for (const cat of SKILLS) {
                     const slug = slugify(cat.category);
                     const catFilled = cat.skills.filter(
-                        (s) => (ratings[s.id] || 0) > 0,
+                        (s) => s.id in ratings,
                     ).length;
                     const isComplete = catFilled === cat.skills.length;
 
@@ -1744,7 +1755,7 @@
                     `;
 
                     for (const skill of cat.skills) {
-                        const isRated = (ratings[skill.id] || 0) > 0;
+                        const isRated = skill.id in ratings;
 
                         html += `
                             <div class="skill-row${isRated ? " rated" : ""}" id="row-${skill.id}">
@@ -1755,6 +1766,16 @@
                                     </button>
                                 </div>
                                 <div class="level-selector" id="btns-${skill.id}">
+                        `;
+
+                        const naSelected = skill.id in ratings && ratings[skill.id] === 0;
+                        html += `
+                            <button
+                                class="level-option na-option${naSelected ? " selected" : ""}"
+                                data-level="0"
+                                style="${naSelected ? `background:${LEVEL_COLORS[0]};border-color:${LEVEL_COLORS[0]}` : ""}"
+                                onclick="selectLevel('${skill.id}', 0)"
+                            ><span class="level-num">N/A</span></button>
                         `;
 
                         for (let i = 1; i <= NUM_LEVELS; i++) {
@@ -1890,8 +1911,9 @@
                     html += `<td class="history-date-cell">${formatHistoryDate(snap.timestamp || snap.date)}</td>`;
                     for (const skill of allSkillsList) {
                         const val = snap.ratings ? snap.ratings[skill.id] : null;
-                        const level = val ? (typeof val === "object" ? val.level : val) : 0;
-                        html += `<td class="level-cell" data-level="${level}"><span class="level-badge">${LEVEL_LABELS[level]}</span></td>`;
+                        const level = val != null ? (typeof val === "object" ? val.level : val) : 0;
+                        const badgeText = val != null && typeof val === "object" && val.label ? val.label : LEVEL_LABELS[level];
+                        html += `<td class="level-cell" data-level="${level}"><span class="level-badge">${badgeText}</span></td>`;
                     }
                     html += "</tr>";
                 }
@@ -1902,7 +1924,7 @@
 
             // ─── INIT ───
             // If already at 100% on load, don't re-trigger the completion overlay
-            const alreadyComplete = Object.values(ratings).filter(r => r > 0).length === totalSkills;
+            const alreadyComplete = Object.keys(ratings).length === totalSkills;
             if (alreadyComplete) completionShown = true;
 
             render();

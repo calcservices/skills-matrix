@@ -24,7 +24,7 @@ const UI_TEXT = {
 
 // ─── LEVELS ───
 const LEVELS = [
-    { label: "—",          color: "transparent" },
+    { label: "—",          color: "#6b7280" },
     { label: "Foundation", color: "var(--level-1)" },
     { label: "Proficient", color: "var(--level-2)" },
     { label: "Advanced",   color: "var(--level-3)" },
