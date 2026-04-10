@@ -1,9 +1,0 @@
-just wanted to flag something ahead of next week's prod push, as i think there's a risk worth being aware of.
-
-we already know one of the changes in this deployment had to be rolled back last week because it was impacting calcs, which was caught. but there could be other breaking changes in what's going in next week that we simply won't know about until something breaks in production. from previous experience, that's not a situation i'd want us to be in.
-
-in an ideal world we'd be able to regression test any dev push across all our calc schemes, and the capability is partially there, but it's not something we've typically done because there hasn't really been a deployment of this size for quite some time.
-
-the problem right now is that doing a proper regression in CalcUAT isn't straightforward, because the current baselines aren't passing, so you'd need to fix those before you could even start testing the new changes, which is a fair bit of overhead and probably not achievable in the time we have left before the push goes out.
-
-i just wanted to make sure this is on people's radars. i think once Keith's new environments proposal is actioned we'll be in a much better place for this kind of thing, but for now we're in a bit of a difficult spot.
